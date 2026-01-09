@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Bridgetown Industries – Work Order</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+  <h1>BRIDGETOWN INDUSTRIES</h1>
+  <h2>WORK ORDER</h2>
+
+  <div class="toolbar">
+    <button id="newBtn">New</button>
+    <button id="saveBtn">Save</button>
+
+    <select id="orderList"></select>
+
+    <button id="loadBtn">Load</button>
+    <button id="deleteBtn">Delete</button>
+  </div>
+
+  <section class="box">
+    <label>Customer</label>
+    <input id="customer" />
+
+    <label>Date</label>
+    <input type="date" id="date" />
+  </section>
+
+  <section class="box">
+    <h3>VEHICLE INFORMATION</h3>
+
+    <input placeholder="Year / Make / Model" id="vehicle" />
+    <input placeholder="Unit No." id="unit" />
+    <input placeholder="VIN" id="vin" />
+    <input placeholder="PO" id="po" />
+    <input placeholder="Mechanic" id="mechanic" />
+    <input placeholder="Mileage" id="mileage" />
+  </section>
+
+  <section class="box">
+    <h3>PARTS</h3>
+
+    <table id="partsTable">
+      <thead>
+        <tr>
+          <th>LINE</th>
+          <th>QTY</th>
+          <th>PART NO. & DESCRIPTION</th>
+          <th>CATEGORY</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="parts-actions">
+      <button id="addPartRowBtn">+ Add Parts Row</button>
+      <button id="clearPartsBtn">Clear Parts</button>
+    </div>
+  </section>
+
+  <section class="box">
+    <h3>DESCRIPTION OF WORK</h3>
+    <textarea id="workDesc" rows="8"></textarea>
+  </section>
+
+  <section class="box">
+    <h3>NOTES</h3>
+    <textarea id="notes" rows="4"></textarea>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
