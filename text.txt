@@ -1,0 +1,10 @@
+workorder-app/
+│
+├── server.js
+├── package.json
+├── workorders.db        (auto-created)
+│
+└── public/
+    ├── index.html
+    ├── styles.css
+    └── app.js
