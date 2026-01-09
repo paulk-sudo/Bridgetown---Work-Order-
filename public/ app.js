@@ -1,4 +1,6 @@
-const DEFAULT_PART_ROWS = 6;
+document.addEventListener("DOMContentLoaded", () => {
+  
+  const DEFAULT_PART_ROWS = 6;
 
 // ---------- Parts UI ----------
 function makePartsRow() {
