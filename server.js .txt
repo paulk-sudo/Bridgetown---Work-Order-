@@ -1,0 +1,106 @@
+const express = require("express");
+const path = require("path");
+const Database = require("better-sqlite3");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ✅ Always resolve the real "public" folder
+const publicDir = path.resolve(__dirname, "public");
+
+// Database
+const db = new Database("workorders.db");
+db.exec(`
+CREATE TABLE IF NOT EXISTS work_orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wo_number TEXT UNIQUE,
+  title TEXT,
+  data TEXT,
+  updated_at TEXT
+);
+`);
+
+app.use(express.json());
+
+// ✅ Serve static files FIRST (so /app.js and /styles.css work)
+app.use(express.static(publicDir));
+
+// ✅ Always serve the main page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
+
+// Generate next WO number
+function nextWONumber() {
+  const row = db
+    .prepare("SELECT wo_number FROM work_orders ORDER BY id DESC LIMIT 1")
+    .get();
+  if (!row) return "WO-000001";
+  const num = parseInt(row.wo_number.replace("WO-", ""), 10) + 1;
+  return "WO-" + String(num).padStart(6, "0");
+}
+
+// ---------------- API ----------------
+app.get("/api/workorders", (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT id, wo_number, title, updated_at
+       FROM work_orders
+       ORDER BY id DESC`
+    )
+    .all();
+  res.json(rows);
+});
+
+app.get("/api/workorders/:id", (req, res) => {
+  const row = db
+    .prepare("SELECT id, wo_number, title, data, updated_at FROM work_orders WHERE id = ?")
+    .get(req.params.id);
+
+  if (!row) return res.status(404).json({ error: "Not found" });
+  row.data = row.data ? JSON.parse(row.data) : {};
+  res.json(row);
+});
+
+app.post("/api/workorders", (req, res) => {
+  const now = new Date().toISOString();
+  const wo_number = req.body.wo_number || nextWONumber();
+  const title = req.body.title || wo_number;
+  const data = JSON.stringify(req.body.data || {});
+
+  try {
+    db.prepare(
+      `INSERT INTO work_orders (wo_number, title, data, updated_at)
+       VALUES (?, ?, ?, ?)`
+    ).run(wo_number, title, data, now);
+
+    res.json({ ok: true, wo_number });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put("/api/workorders/:id", (req, res) => {
+  const now = new Date().toISOString();
+  const title = req.body.title || "";
+  const data = JSON.stringify(req.body.data || {});
+
+  db.prepare(
+    `UPDATE work_orders
+     SET title = ?, data = ?, updated_at = ?
+     WHERE id = ?`
+  ).run(title, data, now, req.params.id);
+
+  res.json({ ok: true });
+});
+
+app.delete("/api/workorders/:id", (req, res) => {
+  db.prepare("DELETE FROM work_orders WHERE id = ?").run(req.params.id);
+  res.json({ ok: true });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Work Orders running at http://localhost:${PORT}`);
+  console.log(`Serving public from: ${publicDir}`);
+});
