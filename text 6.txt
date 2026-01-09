@@ -1,0 +1,67 @@
+let currentId = null;
+
+async function refreshList() {
+  const res = await fetch("/api/workorders");
+  const data = await res.json();
+  const list = document.getElementById("woList");
+  list.innerHTML = `<option>Select Work Order</option>`;
+  data.forEach(w => {
+    const opt = document.createElement("option");
+    opt.value = w.id;
+    opt.textContent = `${w.wo_number} – ${w.title}`;
+    list.appendChild(opt);
+  });
+}
+
+function newWO() {
+  currentId = null;
+  document.querySelector("form").reset();
+  document.getElementById("title").value = "";
+  document.getElementById("woNumber").value = "";
+}
+
+async function saveWO() {
+  const payload = {
+    title: document.getElementById("title").value,
+    customer: customer.value,
+    date: date.value,
+    ymm: ymm.value,
+    unit: unit.value,
+    po: po.value,
+    vin: vin.value,
+    mechanic: mechanic.value,
+    mileage: mileage.value,
+    work: work.value,
+    notes: notes.value
+  };
+
+  if (!currentId) {
+    const res = await fetch("/api/workorders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    document.getElementById("woNumber").value = data.wo_number;
+  } else {
+    await fetch(`/api/workorders/${currentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  }
+  refreshList();
+}
+
+async function loadWO() {
+  currentId = woList.value;
+  const res = await fetch(`/api/workorders/${currentId}`);
+  const wo = await res.json();
+  document.getElementById("woNumber").value = wo.wo_number;
+  document.getElementById("title").value = wo.title;
+  Object.keys(wo.data).forEach(k => {
+    if (document.getElementById(k)) document.getElementById(k).value = wo.data[k];
+  });
+}
+
+refreshList();

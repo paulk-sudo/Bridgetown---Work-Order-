@@ -1,0 +1,44 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  background: #f4f4f4;
+}
+
+header {
+  text-align: center;
+  border-bottom: 2px solid #000;
+}
+
+.controls button, select {
+  padding: 10px;
+  margin: 5px;
+}
+
+.meta input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+}
+
+form {
+  background: #fff;
+  padding: 10px;
+  border: 2px solid #000;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #000;
+}
+
+h3 {
+  border-top: 2px solid #000;
+  padding-top: 6px;
+}

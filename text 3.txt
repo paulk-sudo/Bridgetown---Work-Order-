@@ -1,0 +1,68 @@
+const express = require("express");
+const path = require("path");
+const Database = require("better-sqlite3");
+
+const app = express();
+const PORT = 3000;
+
+// Database
+const db = new Database("workorders.db");
+db.exec(`
+CREATE TABLE IF NOT EXISTS work_orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  wo_number TEXT UNIQUE,
+  title TEXT,
+  data TEXT,
+  updated_at TEXT
+)
+`);
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// Generate next WO number
+function nextWONumber() {
+  const row = db.prepare(`SELECT wo_number FROM work_orders ORDER BY id DESC LIMIT 1`).get();
+  if (!row) return "WO-000001";
+  const num = parseInt(row.wo_number.replace("WO-", ""), 10) + 1;
+  return "WO-" + String(num).padStart(6, "0");
+}
+
+// API
+app.get("/api/workorders", (req, res) => {
+  const rows = db.prepare(`
+    SELECT id, wo_number, title, updated_at
+    FROM work_orders
+    ORDER BY id DESC
+  `).all();
+  res.json(rows);
+});
+
+app.post("/api/workorders", (req, res) => {
+  const wo_number = nextWONumber();
+  const updated_at = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO work_orders (wo_number, title, data, updated_at)
+    VALUES (?, ?, ?, ?)
+  `).run(wo_number, req.body.title || wo_number, JSON.stringify(req.body), updated_at);
+  res.json({ wo_number });
+});
+
+app.get("/api/workorders/:id", (req, res) => {
+  const row = db.prepare(`SELECT * FROM work_orders WHERE id = ?`).get(req.params.id);
+  res.json({ ...row, data: JSON.parse(row.data) });
+});
+
+app.put("/api/workorders/:id", (req, res) => {
+  const updated_at = new Date().toISOString();
+  db.prepare(`
+    UPDATE work_orders
+    SET title = ?, data = ?, updated_at = ?
+    WHERE id = ?
+  `).run(req.body.title, JSON.stringify(req.body), updated_at, req.params.id);
+  res.json({ success: true });
+});
+
+app.listen(PORT, () =>
+  console.log(`Work Orders running at http://localhost:${PORT}`)
+);
